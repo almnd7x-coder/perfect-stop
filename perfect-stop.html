@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Perfect Stop</title>
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: system-ui, sans-serif;
+        color: white;
+        user-select: none;
+    }
+
+    canvas {
+        background: #000;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="game" width="360" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let barX = 0;
+let direction = 1;
+let speed = 4;
+let targetWidth = 120;
+let score = 0;
+let gameOver = false;
+
+const barWidth = 60;
+const barHeight = 14;
+const centerX = canvas.width / 2;
+const barY = canvas.height / 2;
+
+function resetGame() {
+    barX = 0;
+    direction = 1;
+    speed = 4;
+    targetWidth = 120;
+    score = 0;
+    gameOver = false;
+}
+
+function update() {
+    if (!gameOver) {
+        barX += direction * speed;
+
+        const limit = centerX - barWidth / 2;
+        if (barX > limit || barX < -limit) {
+            direction *= -1;
+        }
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Score
+    ctx.font = "28px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.fillText("Score: " + score, centerX, 60);
+
+    // Target zone
+    ctx.fillStyle = "rgba(0, 255, 0, 0.35)";
+    ctx.fillRect(
+        centerX - targetWidth / 2,
+        barY - barHeight,
+        targetWidth,
+        barHeight * 2
+    );
+
+    // Moving bar
+    ctx.fillStyle = "white";
+    ctx.fillRect(
+        centerX + barX - barWidth / 2,
+        barY - barHeight / 2,
+        barWidth,
+        barHeight
+    );
+
+    if (gameOver) {
+        ctx.fillStyle = "red";
+        ctx.font = "36px sans-serif";
+        ctx.fillText("Game Over", centerX, barY - 60);
+
+        ctx.fillStyle = "white";
+        ctx.font = "20px sans-serif";
+        ctx.fillText("Click to restart", centerX, barY);
+    }
+}
+
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+canvas.addEventListener("click", () => {
+    if (gameOver) {
+        resetGame();
+        return;
+    }
+
+    const distance = Math.abs(barX);
+
+    if (distance <= targetWidth / 2) {
+        score += distance < 10 ? 3 : 1;
+        speed *= 1.07;
+        targetWidth *= 0.92;
+    } else {
+        gameOver = true;
+    }
+});
+
+loop();
+</script>
+
+</body>
+</html>
